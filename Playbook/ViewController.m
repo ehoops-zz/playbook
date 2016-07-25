@@ -11,10 +11,12 @@
 
 @interface BBLPlayerData : NSObject
 
-@property (strong) BBLPlayerView *view;
-@property (assign) CGPoint playerPosition;
-@property (assign) CGPoint playerPositionDelta;
-@property (copy) UIColor *color;
+@property (nonatomic, strong) BBLPlayerView *view;
+@property (nonatomic, assign) CGPoint playerPosition;
+@property (nonatomic, assign) CGPoint playerPositionDelta;
+@property (nonatomic, assign) CGSize playerSize;
+@property (nonatomic, copy) UIColor *color;
+
 
 @end
 
@@ -50,27 +52,28 @@
     CGRect bounds = self.view.bounds;
     NSMutableArray *players = [NSMutableArray new];
     for (int i=0; i < 5; i++) {
-        BBLPlayerData *player = [self _createMarkerWithColor:[UIColor blueColor] position:CGPointMake(CGRectGetMidX(bounds) - i * 50 + 85, CGRectGetMidY(bounds) - 75)];
+        BBLPlayerData *player = [self _createMarkerWithColor:[UIColor blueColor] position:CGPointMake(CGRectGetMidX(bounds) - i * 50 + 100, CGRectGetMidY(bounds) - 75) size:CGSizeMake(35, 35)];
         [players addObject:player];
     }
     
     for (int i=0; i < 5; i++) {
-        BBLPlayerData *player = [self _createMarkerWithColor:[UIColor redColor] position:CGPointMake(CGRectGetMidX(bounds) - i * 50 + 85, CGRectGetMidY(bounds) - 150)];
+        BBLPlayerData *player = [self _createMarkerWithColor:[UIColor redColor] position:CGPointMake(CGRectGetMidX(bounds) - i * 50 + 100, CGRectGetMidY(bounds) - 150) size:CGSizeMake(35, 35)];
         [players addObject:player];
     }
     
-    BBLPlayerData *player = [self _createMarkerWithColor:[UIColor brownColor] position:CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds))];
+    BBLPlayerData *player = [self _createMarkerWithColor:[UIColor brownColor] position:CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds)) size:CGSizeMake(25, 25)];
     [players addObject:player];
 
     
     _players = [players copy];
 }
 
-- (BBLPlayerData *)_createMarkerWithColor:(UIColor *)color position:(CGPoint)position{
+- (BBLPlayerData *)_createMarkerWithColor:(UIColor *)color position:(CGPoint)position size:(CGSize)size {
     BBLPlayerData *player = [[BBLPlayerData alloc] init];
     [self.view addSubview:player.view];
     player.color = color;
     player.playerPosition = position;
+    player.playerSize = size;
     
     UIPanGestureRecognizer *panGR = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(_onPan:)];
     [player.view addGestureRecognizer:panGR];
@@ -79,11 +82,10 @@
 
 - (void)viewWillLayoutSubviews {
     for (BBLPlayerData *player in _players) {
-        player.view.frame = CGRectMake(player.playerPosition.x + player.playerPositionDelta.x,
-                                       player.playerPosition.y + player.playerPositionDelta.y,
-                                       25, 25);
+        player.view.center = CGPointMake(player.playerPosition.x + player.playerPositionDelta.x,
+                                         player.playerPosition.y + player.playerPositionDelta.y);
+        player.view.bounds = CGRectMake(0, 0, player.playerSize.width, player.playerSize.height);
     }
-
 }
 
 - (void)_onPan:(UIPanGestureRecognizer *)panGR {
