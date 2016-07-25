@@ -6,9 +6,9 @@
 //  Copyright © 2016 Erin Hoops. All rights reserved.
 //
 
-#import "BBLPlayerView.h"
+#import "BBLMarkerView.h"
 
-@implementation BBLPlayerView
+@implementation BBLMarkerView
 - (instancetype)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];

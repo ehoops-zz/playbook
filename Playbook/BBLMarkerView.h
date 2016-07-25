@@ -8,6 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface BBLPlayerView : UIView
+@interface BBLMarkerView : UIView
 
 @end

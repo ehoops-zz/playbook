@@ -13,7 +13,7 @@
 		0FFA98271D41CF0600B62FD6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0FFA98251D41CF0600B62FD6 /* Main.storyboard */; };
 		0FFA98291D41CF0600B62FD6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0FFA98281D41CF0600B62FD6 /* Assets.xcassets */; };
 		0FFA982C1D41CF0600B62FD6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0FFA982A1D41CF0600B62FD6 /* LaunchScreen.storyboard */; };
-		0FFA98351D41D89B00B62FD6 /* BBLPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0FFA98341D41D89B00B62FD6 /* BBLPlayerView.m */; };
+		0FFA98351D41D89B00B62FD6 /* BBLMarkerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0FFA98341D41D89B00B62FD6 /* BBLMarkerView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,8 +27,8 @@
 		0FFA98281D41CF0600B62FD6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0FFA982B1D41CF0600B62FD6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		0FFA982D1D41CF0600B62FD6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		0FFA98331D41D89B00B62FD6 /* BBLPlayerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BBLPlayerView.h; sourceTree = "<group>"; };
-		0FFA98341D41D89B00B62FD6 /* BBLPlayerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BBLPlayerView.m; sourceTree = "<group>"; };
+		0FFA98331D41D89B00B62FD6 /* BBLMarkerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BBLMarkerView.h; sourceTree = "<group>"; };
+		0FFA98341D41D89B00B62FD6 /* BBLMarkerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BBLMarkerView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,8 +61,8 @@
 		0FFA981B1D41CF0600B62FD6 /* Playbook */ = {
 			isa = PBXGroup;
 			children = (
-				0FFA98331D41D89B00B62FD6 /* BBLPlayerView.h */,
-				0FFA98341D41D89B00B62FD6 /* BBLPlayerView.m */,
+				0FFA98331D41D89B00B62FD6 /* BBLMarkerView.h */,
+				0FFA98341D41D89B00B62FD6 /* BBLMarkerView.m */,
 				0FFA981F1D41CF0600B62FD6 /* AppDelegate.h */,
 				0FFA98201D41CF0600B62FD6 /* AppDelegate.m */,
 				0FFA98221D41CF0600B62FD6 /* ViewController.h */,
@@ -157,7 +157,7 @@
 			files = (
 				0FFA98241D41CF0600B62FD6 /* ViewController.m in Sources */,
 				0FFA98211D41CF0600B62FD6 /* AppDelegate.m in Sources */,
-				0FFA98351D41D89B00B62FD6 /* BBLPlayerView.m in Sources */,
+				0FFA98351D41D89B00B62FD6 /* BBLMarkerView.m in Sources */,
 				0FFA981E1D41CF0600B62FD6 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

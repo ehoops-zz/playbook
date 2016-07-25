@@ -7,24 +7,24 @@
 //
 
 #import "ViewController.h"
-#import "BBLPlayerView.h"
+#import "BBLMarkerView.h"
 
-@interface BBLPlayerData : NSObject
+@interface BBLMarkerData : NSObject
 
-@property (nonatomic, strong) BBLPlayerView *view;
-@property (nonatomic, assign) CGPoint playerPosition;
-@property (nonatomic, assign) CGPoint playerPositionDelta;
-@property (nonatomic, assign) CGSize playerSize;
+@property (nonatomic, strong) BBLMarkerView *view;
+@property (nonatomic, assign) CGPoint markerPosition;
+@property (nonatomic, assign) CGPoint markerPositionDelta;
+@property (nonatomic, assign) CGSize markerSize;
 @property (nonatomic, copy) UIColor *color;
 
 
 @end
 
-@implementation BBLPlayerData
+@implementation BBLMarkerData
 
 - (instancetype)init {
     if(self=[super init]) {
-        _view = [[BBLPlayerView alloc] initWithFrame:CGRectZero];
+        _view = [[BBLMarkerView alloc] initWithFrame:CGRectZero];
     }
     return self;
 }
@@ -44,65 +44,64 @@
 @end
 
 @implementation ViewController {
-    NSArray<BBLPlayerData *> *_players;
+    NSArray<BBLMarkerData *> *_markers;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     CGRect bounds = self.view.bounds;
-    NSMutableArray *players = [NSMutableArray new];
-    for (int i=0; i < 5; i++) {
-        BBLPlayerData *player = [self _createMarkerWithColor:[UIColor blueColor] position:CGPointMake(CGRectGetMidX(bounds) - i * 50 + 100, CGRectGetMidY(bounds) - 75) size:CGSizeMake(35, 35)];
-        [players addObject:player];
-    }
+    NSMutableArray *markers = [NSMutableArray new];
     
     for (int i=0; i < 5; i++) {
-        BBLPlayerData *player = [self _createMarkerWithColor:[UIColor redColor] position:CGPointMake(CGRectGetMidX(bounds) - i * 50 + 100, CGRectGetMidY(bounds) - 150) size:CGSizeMake(35, 35)];
-        [players addObject:player];
+        BBLMarkerData *marker = [self _createMarkerWithColor:[UIColor redColor] position:CGPointMake(CGRectGetMidX(bounds) - i * 50 + 100, CGRectGetMidY(bounds) - 150) size:CGSizeMake(35, 35)];
+        [markers addObject:marker];
+    }
+    for (int i=0; i < 5; i++) {
+        BBLMarkerData *marker = [self _createMarkerWithColor:[UIColor blueColor] position:CGPointMake(CGRectGetMidX(bounds) - i * 50 + 100, CGRectGetMidY(bounds) - 75) size:CGSizeMake(35, 35)];
+        [markers addObject:marker];
     }
     
-    BBLPlayerData *player = [self _createMarkerWithColor:[UIColor brownColor] position:CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds)) size:CGSizeMake(25, 25)];
-    [players addObject:player];
+    BBLMarkerData *marker = [self _createMarkerWithColor:[UIColor brownColor] position:CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds)) size:CGSizeMake(25, 25)];
+    [markers addObject:marker];
 
-    
-    _players = [players copy];
+    _markers = [markers copy];
 }
 
-- (BBLPlayerData *)_createMarkerWithColor:(UIColor *)color position:(CGPoint)position size:(CGSize)size {
-    BBLPlayerData *player = [[BBLPlayerData alloc] init];
-    [self.view addSubview:player.view];
-    player.color = color;
-    player.playerPosition = position;
-    player.playerSize = size;
+- (BBLMarkerData *)_createMarkerWithColor:(UIColor *)color position:(CGPoint)position size:(CGSize)size {
+    BBLMarkerData *marker = [[BBLMarkerData alloc] init];
+    [self.view addSubview:marker.view];
+    marker.color = color;
+    marker.markerPosition = position;
+    marker.markerSize = size;
     
     UIPanGestureRecognizer *panGR = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(_onPan:)];
-    [player.view addGestureRecognizer:panGR];
-    return player;
+    [marker.view addGestureRecognizer:panGR];
+    return marker;
 }
 
 - (void)viewWillLayoutSubviews {
-    for (BBLPlayerData *player in _players) {
-        player.view.center = CGPointMake(player.playerPosition.x + player.playerPositionDelta.x,
-                                         player.playerPosition.y + player.playerPositionDelta.y);
-        player.view.bounds = CGRectMake(0, 0, player.playerSize.width, player.playerSize.height);
+    for (BBLMarkerData *marker in _markers) {
+        marker.view.center = CGPointMake(marker.markerPosition.x + marker.markerPositionDelta.x,
+                                         marker.markerPosition.y + marker.markerPositionDelta.y);
+        marker.view.bounds = CGRectMake(0, 0, marker.markerSize.width, marker.markerSize.height);
     }
 }
 
 - (void)_onPan:(UIPanGestureRecognizer *)panGR {
-    NSUInteger index = [_players indexOfObjectPassingTest:^BOOL(BBLPlayerData * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    NSUInteger index = [_markers indexOfObjectPassingTest:^BOOL(BBLMarkerData * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         return obj.view == panGR.view;
     }];
     
     if (index == NSNotFound) {
         return;
     }
-    BBLPlayerData *player = _players[index];
+    BBLMarkerData *marker = _markers[index];
     CGPoint p = [panGR translationInView:self.view];
     if (panGR.state == UIGestureRecognizerStateEnded) {
-        player.playerPosition = CGPointMake(player.playerPosition.x + p.x, player.playerPosition.y + p.y);
-        player.playerPositionDelta = CGPointZero;
+        marker.markerPosition = CGPointMake(marker.markerPosition.x + p.x, marker.markerPosition.y + p.y);
+        marker.markerPositionDelta = CGPointZero;
     } else {
-        player.playerPositionDelta = p;
+        marker.markerPositionDelta = p;
     }
     [self.view setNeedsLayout];
 }
