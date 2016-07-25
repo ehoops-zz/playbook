@@ -14,6 +14,7 @@
 @property (strong) BBLPlayerView *view;
 @property (assign) CGPoint playerPosition;
 @property (assign) CGPoint playerPositionDelta;
+@property (copy) UIColor *color;
 
 @end
 
@@ -24,6 +25,14 @@
         _view = [[BBLPlayerView alloc] initWithFrame:CGRectZero];
     }
     return self;
+}
+
+- (void)setColor:(UIColor *)color {
+    _view.backgroundColor = color;
+}
+
+- (UIColor *)color {
+    return _view.backgroundColor;
 }
 
 @end
@@ -41,15 +50,31 @@
     CGRect bounds = self.view.bounds;
     NSMutableArray *players = [NSMutableArray new];
     for (int i=0; i < 5; i++) {
-        BBLPlayerData *player = [[BBLPlayerData alloc] init];
-        [self.view addSubview:player.view];
-        player.playerPosition = CGPointMake(CGRectGetMidX(bounds) - i * 50 + 85, CGRectGetMidY(bounds) - 150);
+        BBLPlayerData *player = [self _createMarkerWithColor:[UIColor blueColor] position:CGPointMake(CGRectGetMidX(bounds) - i * 50 + 85, CGRectGetMidY(bounds) - 75)];
         [players addObject:player];
-        
-        UIPanGestureRecognizer *panGR = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(_onPan:)];
-        [player.view addGestureRecognizer:panGR];
     }
+    
+    for (int i=0; i < 5; i++) {
+        BBLPlayerData *player = [self _createMarkerWithColor:[UIColor redColor] position:CGPointMake(CGRectGetMidX(bounds) - i * 50 + 85, CGRectGetMidY(bounds) - 150)];
+        [players addObject:player];
+    }
+    
+    BBLPlayerData *player = [self _createMarkerWithColor:[UIColor brownColor] position:CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds))];
+    [players addObject:player];
+
+    
     _players = [players copy];
+}
+
+- (BBLPlayerData *)_createMarkerWithColor:(UIColor *)color position:(CGPoint)position{
+    BBLPlayerData *player = [[BBLPlayerData alloc] init];
+    [self.view addSubview:player.view];
+    player.color = color;
+    player.playerPosition = position;
+    
+    UIPanGestureRecognizer *panGR = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(_onPan:)];
+    [player.view addGestureRecognizer:panGR];
+    return player;
 }
 
 - (void)viewWillLayoutSubviews {
