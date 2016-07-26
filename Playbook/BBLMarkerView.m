@@ -13,8 +13,6 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        self.backgroundColor = [UIColor blueColor];
-        NSLog(@"test");
     }
     return self;
 }

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0FE502261D471520009B2224 /* BBLArrowView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0FE502251D471520009B2224 /* BBLArrowView.m */; };
 		0FFA981E1D41CF0600B62FD6 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 0FFA981D1D41CF0600B62FD6 /* main.m */; };
 		0FFA98211D41CF0600B62FD6 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 0FFA98201D41CF0600B62FD6 /* AppDelegate.m */; };
 		0FFA98241D41CF0600B62FD6 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0FFA98231D41CF0600B62FD6 /* ViewController.m */; };
@@ -17,6 +18,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0FE502241D471520009B2224 /* BBLArrowView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BBLArrowView.h; sourceTree = "<group>"; };
+		0FE502251D471520009B2224 /* BBLArrowView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BBLArrowView.m; sourceTree = "<group>"; };
 		0FFA98191D41CF0600B62FD6 /* Playbook.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Playbook.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0FFA981D1D41CF0600B62FD6 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		0FFA981F1D41CF0600B62FD6 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -62,6 +65,8 @@
 			isa = PBXGroup;
 			children = (
 				0FFA98331D41D89B00B62FD6 /* BBLMarkerView.h */,
+				0FE502241D471520009B2224 /* BBLArrowView.h */,
+				0FE502251D471520009B2224 /* BBLArrowView.m */,
 				0FFA98341D41D89B00B62FD6 /* BBLMarkerView.m */,
 				0FFA981F1D41CF0600B62FD6 /* AppDelegate.h */,
 				0FFA98201D41CF0600B62FD6 /* AppDelegate.m */,
@@ -157,6 +162,7 @@
 			files = (
 				0FFA98241D41CF0600B62FD6 /* ViewController.m in Sources */,
 				0FFA98211D41CF0600B62FD6 /* AppDelegate.m in Sources */,
+				0FE502261D471520009B2224 /* BBLArrowView.m in Sources */,
 				0FFA98351D41D89B00B62FD6 /* BBLMarkerView.m in Sources */,
 				0FFA981E1D41CF0600B62FD6 /* main.m in Sources */,
 			);

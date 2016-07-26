@@ -8,6 +8,7 @@
 
 #import "ViewController.h"
 #import "BBLMarkerView.h"
+#import "BBLArrowView.h"
 
 @interface BBLMarkerData : NSObject
 
@@ -45,11 +46,16 @@
 
 @implementation ViewController {
     NSArray<BBLMarkerData *> *_markers;
+    BBLArrowView *_arrowView;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     CGRect bounds = self.view.bounds;
+    
+    _arrowView = [[BBLArrowView alloc] initWithFrame:bounds];
+    [self.view addSubview:_arrowView];
+    
     NSMutableArray *markers = [NSMutableArray new];
     
     for (int i=0; i < 5; i++) {
@@ -80,6 +86,7 @@
 }
 
 - (void)viewWillLayoutSubviews {
+    _arrowView.frame = self.view.bounds;
     for (BBLMarkerData *marker in _markers) {
         marker.view.center = CGPointMake(marker.markerPosition.x + marker.markerPositionDelta.x,
                                          marker.markerPosition.y + marker.markerPositionDelta.y);
@@ -100,6 +107,8 @@
     if (panGR.state == UIGestureRecognizerStateEnded) {
         marker.markerPosition = CGPointMake(marker.markerPosition.x + p.x, marker.markerPosition.y + p.y);
         marker.markerPositionDelta = CGPointZero;
+    } else if (panGR.state == UIGestureRecognizerStateBegan) {
+        _arrowView.start = marker.markerPosition;
     } else {
         marker.markerPositionDelta = p;
     }
