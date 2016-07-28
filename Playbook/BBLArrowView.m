@@ -18,8 +18,8 @@
     return self;
 }
 
-- (void)setStart:(CGPoint)start {
-    _start = start;
+- (void)setPathPoints:(NSArray *)pathPoints {
+    _pathPoints = [pathPoints copy];
     [self setNeedsDisplay];
 }
 
@@ -28,19 +28,25 @@
     CGContextRef context = UIGraphicsGetCurrentContext();
     
     //Set the stroke (pen) color
-    CGContextSetStrokeColorWithColor(context, [UIColor blueColor].CGColor);
+    CGContextSetStrokeColorWithColor(context, [UIColor blackColor].CGColor);
     //Set the width of the pen mark
     CGContextSetLineWidth(context, 5.0);
     
+    if (_pathPoints.count == 0) {
+        return;
+    }
+    
     // Draw a line
     //Start at this point
-    CGContextMoveToPoint(context, _start.x, _start.y);
+    CGPoint start = [_pathPoints[0] CGPointValue];
+    CGContextMoveToPoint(context, start.x, start.y);
     
     //Give instructions to the CGContext
     //(move "pen" around the screen)
-    CGContextAddLineToPoint(context, 310.0, 30.0);
-    CGContextAddLineToPoint(context, 310.0, 90.0);
-    CGContextAddLineToPoint(context, 10.0, 90.0);
+    for (NSUInteger i = 1; i < _pathPoints.count; i++) {
+        CGPoint point = [_pathPoints[i] CGPointValue];
+        CGContextAddLineToPoint(context, point.x, point.y);
+    }
     
     //Draw it
     CGContextStrokePath(context);

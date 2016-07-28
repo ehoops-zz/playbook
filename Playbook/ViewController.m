@@ -47,12 +47,13 @@
 @implementation ViewController {
     NSArray<BBLMarkerData *> *_markers;
     BBLArrowView *_arrowView;
+    NSMutableArray *_pathPoints;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     CGRect bounds = self.view.bounds;
-    
+    _pathPoints = [NSMutableArray new];
     _arrowView = [[BBLArrowView alloc] initWithFrame:bounds];
     [self.view addSubview:_arrowView];
     
@@ -104,14 +105,20 @@
     }
     BBLMarkerData *marker = _markers[index];
     CGPoint p = [panGR translationInView:self.view];
-    if (panGR.state == UIGestureRecognizerStateEnded) {
-        marker.markerPosition = CGPointMake(marker.markerPosition.x + p.x, marker.markerPosition.y + p.y);
+    
+    if (panGR.state == UIGestureRecognizerStateBegan) {
+        [_pathPoints removeAllObjects];
+        [_pathPoints addObject:[NSValue valueWithCGPoint:CGPointMake(marker.markerPosition.x,
+                                                                     marker.markerPosition.y)]];
+    } else if (panGR.state == UIGestureRecognizerStateEnded) {
+        marker.markerPosition = CGPointMake(marker.markerPosition.x + p.x,
+                                            marker.markerPosition.y + p.y);
         marker.markerPositionDelta = CGPointZero;
-    } else if (panGR.state == UIGestureRecognizerStateBegan) {
-        _arrowView.start = marker.markerPosition;
     } else {
         marker.markerPositionDelta = p;
+        [_pathPoints addObject:[NSValue valueWithCGPoint:CGPointMake(marker.markerPosition.x + p.x, marker.markerPosition.y + p.y)]];
     }
+    _arrowView.pathPoints = _pathPoints;
     [self.view setNeedsLayout];
 }
 

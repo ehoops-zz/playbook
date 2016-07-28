@@ -10,7 +10,7 @@
 
 @interface BBLArrowView : UIView
 
-@property (nonatomic, assign) CGPoint start;
+@property (nonatomic, copy) NSArray *pathPoints;
 
 @end
 
