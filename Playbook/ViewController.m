@@ -45,6 +45,7 @@
 @end
 
 @implementation ViewController {
+    UIImageView *_courtView;
     NSArray<BBLMarkerData *> *_markers;
     BBLArrowView *_arrowView;
     NSMutableArray *_pathPoints;
@@ -52,6 +53,11 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    _courtView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"court"]];
+    _courtView.contentMode = UIViewContentModeScaleAspectFit;
+    [self.view addSubview:_courtView];
+    self.view.backgroundColor = [UIColor whiteColor];
+    
     CGRect bounds = self.view.bounds;
     _pathPoints = [NSMutableArray new];
     _arrowView = [[BBLArrowView alloc] initWithFrame:bounds];
@@ -87,6 +93,15 @@
 }
 
 - (void)viewWillLayoutSubviews {
+    CGSize backgroundSize = self.view.bounds.size;
+    CGSize courtSize = backgroundSize;
+    courtSize.height -= 15;
+    CGSize imageSize = _courtView.image.size;
+    courtSize.width = courtSize.height * imageSize.width / imageSize.height;
+    _courtView.frame = CGRectMake(backgroundSize.width - courtSize.width,
+                                  backgroundSize.height - courtSize.height,
+                                  courtSize.width, courtSize.height);
+    
     _arrowView.frame = self.view.bounds;
     for (BBLMarkerData *marker in _markers) {
         marker.view.center = CGPointMake(marker.markerPosition.x + marker.markerPositionDelta.x,
