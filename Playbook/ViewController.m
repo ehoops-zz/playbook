@@ -18,8 +18,24 @@
 @property (nonatomic, assign) CGSize markerSize;
 @property (nonatomic, copy) UIColor *color;
 
+@end
+
+@interface BBLSnapshot : NSObject
+
+@property (nonatomic, copy) NSArray *resetPositions;
 
 @end
+
+@implementation BBLSnapshot
+
+- (instancetype)init {
+    if(self=[super init]) {
+        _resetPositions = [[NSArray alloc] init];
+    }
+    return self;
+}
+@end
+
 
 @implementation BBLMarkerData
 
@@ -49,14 +65,22 @@
     NSArray<BBLMarkerData *> *_markers;
     BBLArrowView *_arrowView;
     NSMutableArray *_pathPoints;
+    BBLSnapshot *_snapshot;
+    UIButton *_resetButton;
+    
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    // Setup background
     _courtView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"court"]];
     _courtView.contentMode = UIViewContentModeScaleAspectFit;
     [self.view addSubview:_courtView];
     self.view.backgroundColor = [UIColor whiteColor];
+    
+    // Setup buttons
+    _resetButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [self.view addSubview:_resetButton];
     
     CGRect bounds = self.view.bounds;
     _pathPoints = [NSMutableArray new];
@@ -78,6 +102,8 @@
     [markers addObject:marker];
 
     _markers = [markers copy];
+    
+    [self _saveSnapshot];
 }
 
 - (BBLMarkerData *)_createMarkerWithColor:(UIColor *)color position:(CGPoint)position size:(CGSize)size {
@@ -90,6 +116,16 @@
     UIPanGestureRecognizer *panGR = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(_onPan:)];
     [marker.view addGestureRecognizer:panGR];
     return marker;
+}
+
+- (void)_saveSnapshot {
+    BBLSnapshot *snapshot = [[BBLSnapshot alloc] init];
+    NSMutableArray *tempPositions = [[NSMutableArray alloc] init];
+    for (BBLMarkerData *marker in _markers) {
+        [tempPositions addObject:[NSValue valueWithCGPoint:marker.markerPosition]];
+    }
+    snapshot.resetPositions = tempPositions;
+    _snapshot = snapshot;
 }
 
 - (void)viewWillLayoutSubviews {
