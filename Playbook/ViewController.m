@@ -77,16 +77,24 @@
     _courtView.contentMode = UIViewContentModeScaleAspectFit;
     [self.view addSubview:_courtView];
     self.view.backgroundColor = [UIColor whiteColor];
-    
-    // Setup buttons
-    _resetButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [self.view addSubview:_resetButton];
-    
+
+    // Setup Arrow layer
     CGRect bounds = self.view.bounds;
     _pathPoints = [NSMutableArray new];
     _arrowView = [[BBLArrowView alloc] initWithFrame:bounds];
     [self.view addSubview:_arrowView];
     
+    // Setup buttons
+    _resetButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [_resetButton setTitle:@"Reset" forState:UIControlStateNormal];
+    _resetButton.backgroundColor = [UIColor grayColor];
+    [_resetButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [_resetButton.titleLabel setFont:[UIFont systemFontOfSize:48]];
+    [_resetButton addTarget:self action:@selector(_resetButtonAction) forControlEvents:UIControlEventTouchUpInside];
+    
+    [self.view addSubview:_resetButton];
+    
+    // Setup Player and Ball markers
     NSMutableArray *markers = [NSMutableArray new];
     
     for (int i=0; i < 5; i++) {
@@ -138,6 +146,8 @@
                                   backgroundSize.height - courtSize.height,
                                   courtSize.width, courtSize.height);
     
+    _resetButton.frame = CGRectMake(10, 50, backgroundSize.width - courtSize.width - 20,100);
+    
     _arrowView.frame = self.view.bounds;
     for (BBLMarkerData *marker in _markers) {
         marker.view.center = CGPointMake(marker.markerPosition.x + marker.markerPositionDelta.x,
@@ -171,6 +181,17 @@
     }
     _arrowView.pathPoints = _pathPoints;
     [self.view setNeedsLayout];
+}
+
+- (void)_resetButtonAction
+{
+    for (int i = 0; i < _markers.count; i++) {
+        NSValue *newPosition = _snapshot.resetPositions[i];
+        [_markers[i] setMarkerPosition:newPosition.CGPointValue];
+    }
+    _arrowView.pathPoints = @[];
+    [self.view setNeedsLayout];
+
 }
 
 @end
