@@ -20,23 +20,6 @@
 
 @end
 
-@interface BBLSnapshot : NSObject
-
-@property (nonatomic, copy) NSArray *resetPositions;
-
-@end
-
-@implementation BBLSnapshot
-
-- (instancetype)init {
-    if(self=[super init]) {
-        _resetPositions = [[NSArray alloc] init];
-    }
-    return self;
-}
-@end
-
-
 @implementation BBLMarkerData
 
 - (instancetype)init {
@@ -55,6 +38,41 @@
 }
 
 @end
+
+@interface BBLSnapshot : NSObject
+
+@property (nonatomic, copy) NSArray *snapPositions;
+@property (nonatomic, copy) NSArray *snapPath;
+
+@end
+
+@implementation BBLSnapshot
+
+- (instancetype)init {
+    if(self=[super init]) {
+        _snapPositions = [[NSArray alloc] init];
+    }
+    return self;
+}
+@end
+
+@interface BBLplay : NSObject
+
+@property (nonatomic, copy) NSArray *playSteps;
+
+@end
+
+@implementation BBLplay
+
+- (instancetype)init {
+    if(self=[super init]) {
+        _playSteps = @[];
+    }
+    return self;
+}
+
+@end
+
 
 @interface ViewController ()
 
@@ -75,7 +93,7 @@
     // Recording
     BBLSnapshot *_snapshot;
     BOOL _recording;
-    
+    BBLplay *_play;
 }
 
 - (void)viewDidLoad {
@@ -118,9 +136,11 @@
     [_recordButton setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
     _recordButton.backgroundColor = [UIColor grayColor];
     [_recordButton addTarget:self action:@selector(_recordButtonAction) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:_recordButton];
+    
     // TODO: why is _recording still nil?
     _recording = NO;
-    [self.view addSubview:_recordButton];
+    _play = [BBLplay new];
     
     
     // Setup Player and Ball markers
@@ -157,17 +177,6 @@
     return marker;
 }
 
-// Helper method to save the marker position and current arrow (pathPoints)
-- (void)_saveSnapshot {
-    BBLSnapshot *snapshot = [[BBLSnapshot alloc] init];
-    NSMutableArray *tempPositions = [[NSMutableArray alloc] init];
-    for (BBLMarkerData *marker in _markers) {
-        [tempPositions addObject:[NSValue valueWithCGPoint:marker.markerPosition]];
-    }
-    snapshot.resetPositions = tempPositions;
-    _snapshot = snapshot;
-}
-
 - (void)viewWillLayoutSubviews {
     CGSize backgroundSize = self.view.bounds.size;
     CGSize courtSize = backgroundSize;
@@ -191,6 +200,27 @@
     }
 }
 
+// Helper method to save the marker position and current arrow (pathPoints)
+- (void)_saveSnapshot {
+    BBLSnapshot *snapshot = [[BBLSnapshot alloc] init];
+    NSMutableArray *tempPositions = [[NSMutableArray alloc] init];
+    for (BBLMarkerData *marker in _markers) {
+        [tempPositions addObject:[NSValue valueWithCGPoint:marker.markerPosition]];
+    }
+    snapshot.snapPositions = tempPositions;
+    _snapshot = snapshot;
+}
+
+// Helper method to save the current snapshot to the play series
+- (void) _addPlayStep {
+    [self _saveSnapshot];
+    NSMutableArray *currentPlaySteps = [_play.playSteps mutableCopy];
+    // TODO: throwing NSexception
+    [currentPlaySteps addObject:_snapshot];
+    _play.playSteps = currentPlaySteps;
+}
+
+// Gesture and button click methods
 - (void)_onPan:(UIPanGestureRecognizer *)panGR {
     NSUInteger index = [_markers indexOfObjectPassingTest:^BOOL(BBLMarkerData * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         return obj.view == panGR.view;
@@ -207,6 +237,9 @@
         [_pathPoints addObject:[NSValue valueWithCGPoint:CGPointMake(marker.markerPosition.x,
                                                                      marker.markerPosition.y)]];
     } else if (panGR.state == UIGestureRecognizerStateEnded) {
+        if (_recording) {
+            [self _addPlayStep];
+        }
         marker.markerPosition = CGPointMake(marker.markerPosition.x + p.x,
                                             marker.markerPosition.y + p.y);
         marker.markerPositionDelta = CGPointZero;
@@ -218,11 +251,18 @@
     [self.view setNeedsLayout];
 }
 
+// Button Click Methods
 - (void)_resetButtonAction
 {
+    BBLSnapshot *start = [BBLSnapshot new];
+    if ([_play.playSteps count] > 0) {
+        start = _play.playSteps[0];
+    } else {
+        start = _snapshot;
+    }
     for (int i = 0; i < _markers.count; i++) {
-        NSValue *newPosition = _snapshot.resetPositions[i];
-        [_markers[i] setMarkerPosition:newPosition.CGPointValue];
+        NSValue *resetPosition = start.snapPositions[i];
+        [_markers[i] setMarkerPosition:resetPosition.CGPointValue];
     }
     _arrowView.pathPoints = @[];
     [self.view setNeedsLayout];
