@@ -39,6 +39,7 @@
 
 @end
 
+
 @interface BBLSnapshot : NSObject
 
 @property (nonatomic, copy) NSArray *snapPositions;
@@ -51,6 +52,7 @@
 - (instancetype)init {
     if(self=[super init]) {
         _snapPositions = [[NSArray alloc] init];
+        _snapPath = [[NSArray alloc] init];
     }
     return self;
 }
@@ -131,13 +133,13 @@
     [_recordButton addTarget:self action:@selector(_recordButtonAction) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:_recordButton];
     
-    // Reset Button
+    // Step Button
     _stepButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [_stepButton setTitle:@"Reset" forState:UIControlStateNormal];
+    [_stepButton setTitle:@"Step" forState:UIControlStateNormal];
     [_stepButton.titleLabel setFont:[UIFont systemFontOfSize:48]];
     [_stepButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     _stepButton.backgroundColor = [UIColor grayColor];
-    [_stepButton addTarget:self action:@selector(_resetButtonAction) forControlEvents:UIControlEventTouchUpInside];
+    [_stepButton addTarget:self action:@selector(_stepButtonAction) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:_stepButton];
     
     // TODO: why is _recording still nil?
@@ -191,6 +193,8 @@
     
     _resetButton.frame = CGRectMake(10, 170, backgroundSize.width - courtSize.width - 20, 100);
     _recordButton.frame = CGRectMake(10, 290, backgroundSize.width - courtSize.width - 20, 100);
+    _stepButton.frame = CGRectMake(10, 410, backgroundSize.width - courtSize.width - 20, 100);
+
 
     
     _arrowView.frame = self.view.bounds;
@@ -209,6 +213,7 @@
         [tempPositions addObject:[NSValue valueWithCGPoint:marker.markerPosition]];
     }
     snapshot.snapPositions = tempPositions;
+    snapshot.snapPath = _arrowView.pathPoints;
     _snapshot = snapshot;
 }
 
@@ -237,12 +242,13 @@
         [_pathPoints addObject:[NSValue valueWithCGPoint:CGPointMake(marker.markerPosition.x,
                                                                      marker.markerPosition.y)]];
     } else if (panGR.state == UIGestureRecognizerStateEnded) {
-        if (_recording) {
-            [self _addPlayStep];
-        }
         marker.markerPosition = CGPointMake(marker.markerPosition.x + p.x,
                                             marker.markerPosition.y + p.y);
         marker.markerPositionDelta = CGPointZero;
+        // Need to record step after positions are updated
+        if (_recording) {
+            [self _addPlayStep];
+        }
     } else {
         marker.markerPositionDelta = p;
         [_pathPoints addObject:[NSValue valueWithCGPoint:CGPointMake(marker.markerPosition.x + p.x, marker.markerPosition.y + p.y)]];
@@ -254,6 +260,9 @@
 // Button Click Methods
 - (void)_resetButtonAction
 {
+    if (_recording) {
+        [self _recordButtonAction];
+    }
     BBLSnapshot *start = [BBLSnapshot new];
     if ([_play.playSteps count] > 0) {
         start = _play.playSteps[0];
@@ -265,6 +274,7 @@
         [_markers[i] setMarkerPosition:resetPosition.CGPointValue];
     }
     _arrowView.pathPoints = @[];
+    _play.stepCount = 1;
     [self.view setNeedsLayout];
 
 }
@@ -282,6 +292,28 @@
         _recordButton.backgroundColor = [UIColor grayColor];
         _recording = NO;
     }
+}
+
+- (void)_stepButtonAction
+{
+    if (_recording) {
+        [self _recordButtonAction];
+    }
+    if (_play.stepCount == 0) {
+        [self _resetButtonAction];
+    } else if (_play.stepCount >= [_play.playSteps count]) {
+        _play.stepCount = 0;
+        [self _resetButtonAction];
+    } else {
+        BBLSnapshot *step = _play.playSteps[_play.stepCount];
+        for (int i = 0; i < _markers.count; i++) {
+            NSValue *stepPosition = step.snapPositions[i];
+            [_markers[i] setMarkerPosition:stepPosition.CGPointValue];
+        }
+        _arrowView.pathPoints = step.snapPath;
+    }
+    _play.stepCount += 1;
+    [self.view setNeedsLayout];
 }
 
 @end
