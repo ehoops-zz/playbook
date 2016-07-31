@@ -61,13 +61,20 @@
 @end
 
 @implementation ViewController {
+    // Court, markers and arrows
     UIImageView *_courtView;
     NSArray<BBLMarkerData *> *_markers;
     BBLArrowView *_arrowView;
     NSMutableArray *_pathPoints;
-    BBLSnapshot *_snapshot;
+    
+    // Buttons
     UIButton *_resetButton;
     UIButton *_saveStartButton;
+    UIButton *_recordButton;
+    
+    // Recording
+    BBLSnapshot *_snapshot;
+    BOOL _recording;
     
 }
 
@@ -85,27 +92,39 @@
     _arrowView = [[BBLArrowView alloc] initWithFrame:bounds];
     [self.view addSubview:_arrowView];
     
-    // Setup buttons
-    // Reset Button
-    _resetButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [_resetButton setTitle:@"Reset" forState:UIControlStateNormal];
-    [_resetButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [_resetButton.titleLabel setFont:[UIFont systemFontOfSize:48]];
-    _resetButton.backgroundColor = [UIColor grayColor];
-    [_resetButton addTarget:self action:@selector(_resetButtonAction) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:_resetButton];
-    
+    // Setup buttons - must be after Arrow layer so the buttons are clickable
     // Save Starting Position Button
     _saveStartButton = [UIButton buttonWithType:UIButtonTypeSystem];
     [_saveStartButton setTitle:@"Save" forState:UIControlStateNormal];
-    [_saveStartButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_saveStartButton.titleLabel setFont:[UIFont systemFontOfSize:48]];
+    [_saveStartButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     _saveStartButton.backgroundColor = [UIColor grayColor];
     [_saveStartButton addTarget:self action:@selector(_saveStartButtonAction) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:_saveStartButton];
     
+    // Reset Button
+    _resetButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [_resetButton setTitle:@"Reset" forState:UIControlStateNormal];
+    [_resetButton.titleLabel setFont:[UIFont systemFontOfSize:48]];
+    [_resetButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    _resetButton.backgroundColor = [UIColor grayColor];
+    [_resetButton addTarget:self action:@selector(_resetButtonAction) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:_resetButton];
+    
+    // Record Play Button
+    _recordButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [_recordButton setTitle:@"Record" forState:UIControlStateNormal];
+    [_recordButton.titleLabel setFont:[UIFont systemFontOfSize:48]];
+    [_recordButton setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+    _recordButton.backgroundColor = [UIColor grayColor];
+    [_recordButton addTarget:self action:@selector(_recordButtonAction) forControlEvents:UIControlEventTouchUpInside];
+    // TODO: why is _recording still nil?
+    _recording = NO;
+    [self.view addSubview:_recordButton];
+    
     
     // Setup Player and Ball markers
+    // Two teams of 5 and 1 ball
     NSMutableArray *markers = [NSMutableArray new];
     
     for (int i=0; i < 5; i++) {
@@ -125,6 +144,7 @@
     [self _saveSnapshot];
 }
 
+// Helper method to create a player or ball marker
 - (BBLMarkerData *)_createMarkerWithColor:(UIColor *)color position:(CGPoint)position size:(CGSize)size {
     BBLMarkerData *marker = [[BBLMarkerData alloc] init];
     [self.view addSubview:marker.view];
@@ -137,6 +157,7 @@
     return marker;
 }
 
+// Helper method to save the marker position and current arrow (pathPoints)
 - (void)_saveSnapshot {
     BBLSnapshot *snapshot = [[BBLSnapshot alloc] init];
     NSMutableArray *tempPositions = [[NSMutableArray alloc] init];
@@ -157,8 +178,10 @@
                                   backgroundSize.height - courtSize.height,
                                   courtSize.width, courtSize.height);
     
-    _resetButton.frame = CGRectMake(10, 170, backgroundSize.width - courtSize.width - 20, 100);
     _saveStartButton.frame = CGRectMake(10, 50, backgroundSize.width - courtSize.width - 20,100);
+    _resetButton.frame = CGRectMake(10, 170, backgroundSize.width - courtSize.width - 20, 100);
+    _recordButton.frame = CGRectMake(10, 290, backgroundSize.width - courtSize.width - 20, 100);
+
     
     _arrowView.frame = self.view.bounds;
     for (BBLMarkerData *marker in _markers) {
@@ -209,6 +232,19 @@
 - (void)_saveStartButtonAction
 {
     [self _saveSnapshot];
+}
+
+- (void)_recordButtonAction
+{
+    if (!_recording) {
+        [_recordButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        _recordButton.backgroundColor = [UIColor redColor];
+        _recording = YES;
+    } else {
+        [_recordButton setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+        _recordButton.backgroundColor = [UIColor grayColor];
+        _recording = NO;
+    }
 }
 
 @end
