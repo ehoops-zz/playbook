@@ -215,7 +215,6 @@
 - (void) _addPlayStep {
     [self _saveSnapshot];
     NSMutableArray *currentPlaySteps = [_play.playSteps mutableCopy];
-    // TODO: throwing NSexception
     [currentPlaySteps addObject:_snapshot];
     _play.playSteps = currentPlaySteps;
 }
@@ -277,6 +276,8 @@
 - (void)_recordButtonAction
 {
     if (!_recording) {
+        _play.playSteps = @[];
+        [self _addPlayStep];
         [_recordButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         _recordButton.backgroundColor = [UIColor redColor];
         _recording = YES;
