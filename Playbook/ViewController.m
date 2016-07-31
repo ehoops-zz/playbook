@@ -67,6 +67,7 @@
     NSMutableArray *_pathPoints;
     BBLSnapshot *_snapshot;
     UIButton *_resetButton;
+    UIButton *_saveStartButton;
     
 }
 
@@ -85,14 +86,24 @@
     [self.view addSubview:_arrowView];
     
     // Setup buttons
+    // Reset Button
     _resetButton = [UIButton buttonWithType:UIButtonTypeSystem];
     [_resetButton setTitle:@"Reset" forState:UIControlStateNormal];
-    _resetButton.backgroundColor = [UIColor grayColor];
     [_resetButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_resetButton.titleLabel setFont:[UIFont systemFontOfSize:48]];
+    _resetButton.backgroundColor = [UIColor grayColor];
     [_resetButton addTarget:self action:@selector(_resetButtonAction) forControlEvents:UIControlEventTouchUpInside];
-    
     [self.view addSubview:_resetButton];
+    
+    // Save Starting Position Button
+    _saveStartButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [_saveStartButton setTitle:@"Save" forState:UIControlStateNormal];
+    [_saveStartButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [_saveStartButton.titleLabel setFont:[UIFont systemFontOfSize:48]];
+    _saveStartButton.backgroundColor = [UIColor grayColor];
+    [_saveStartButton addTarget:self action:@selector(_saveStartButtonAction) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:_saveStartButton];
+    
     
     // Setup Player and Ball markers
     NSMutableArray *markers = [NSMutableArray new];
@@ -146,7 +157,8 @@
                                   backgroundSize.height - courtSize.height,
                                   courtSize.width, courtSize.height);
     
-    _resetButton.frame = CGRectMake(10, 50, backgroundSize.width - courtSize.width - 20,100);
+    _resetButton.frame = CGRectMake(10, 170, backgroundSize.width - courtSize.width - 20, 100);
+    _saveStartButton.frame = CGRectMake(10, 50, backgroundSize.width - courtSize.width - 20,100);
     
     _arrowView.frame = self.view.bounds;
     for (BBLMarkerData *marker in _markers) {
@@ -192,6 +204,11 @@
     _arrowView.pathPoints = @[];
     [self.view setNeedsLayout];
 
+}
+
+- (void)_saveStartButtonAction
+{
+    [self _saveSnapshot];
 }
 
 @end
