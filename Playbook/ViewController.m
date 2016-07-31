@@ -59,6 +59,7 @@
 @interface BBLplay : NSObject
 
 @property (nonatomic, copy) NSArray *playSteps;
+@property (nonatomic) int stepCount;
 
 @end
 
@@ -67,6 +68,7 @@
 - (instancetype)init {
     if(self=[super init]) {
         _playSteps = @[];
+        _stepCount = 0;
     }
     return self;
 }
@@ -87,8 +89,8 @@
     
     // Buttons
     UIButton *_resetButton;
-    UIButton *_saveStartButton;
     UIButton *_recordButton;
+    UIButton *_stepButton;
     
     // Recording
     BBLSnapshot *_snapshot;
@@ -109,16 +111,7 @@
     _pathPoints = [NSMutableArray new];
     _arrowView = [[BBLArrowView alloc] initWithFrame:bounds];
     [self.view addSubview:_arrowView];
-    
-    // Setup buttons - must be after Arrow layer so the buttons are clickable
-    // Save Starting Position Button
-    _saveStartButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [_saveStartButton setTitle:@"Save" forState:UIControlStateNormal];
-    [_saveStartButton.titleLabel setFont:[UIFont systemFontOfSize:48]];
-    [_saveStartButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    _saveStartButton.backgroundColor = [UIColor grayColor];
-    [_saveStartButton addTarget:self action:@selector(_saveStartButtonAction) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:_saveStartButton];
+
     
     // Reset Button
     _resetButton = [UIButton buttonWithType:UIButtonTypeSystem];
@@ -129,7 +122,7 @@
     [_resetButton addTarget:self action:@selector(_resetButtonAction) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:_resetButton];
     
-    // Record Play Button
+    // Record Button
     _recordButton = [UIButton buttonWithType:UIButtonTypeSystem];
     [_recordButton setTitle:@"Record" forState:UIControlStateNormal];
     [_recordButton.titleLabel setFont:[UIFont systemFontOfSize:48]];
@@ -137,6 +130,15 @@
     _recordButton.backgroundColor = [UIColor grayColor];
     [_recordButton addTarget:self action:@selector(_recordButtonAction) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:_recordButton];
+    
+    // Reset Button
+    _stepButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [_stepButton setTitle:@"Reset" forState:UIControlStateNormal];
+    [_stepButton.titleLabel setFont:[UIFont systemFontOfSize:48]];
+    [_stepButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    _stepButton.backgroundColor = [UIColor grayColor];
+    [_stepButton addTarget:self action:@selector(_resetButtonAction) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:_stepButton];
     
     // TODO: why is _recording still nil?
     _recording = NO;
@@ -187,7 +189,6 @@
                                   backgroundSize.height - courtSize.height,
                                   courtSize.width, courtSize.height);
     
-    _saveStartButton.frame = CGRectMake(10, 50, backgroundSize.width - courtSize.width - 20,100);
     _resetButton.frame = CGRectMake(10, 170, backgroundSize.width - courtSize.width - 20, 100);
     _recordButton.frame = CGRectMake(10, 290, backgroundSize.width - courtSize.width - 20, 100);
 
@@ -266,11 +267,6 @@
     _arrowView.pathPoints = @[];
     [self.view setNeedsLayout];
 
-}
-
-- (void)_saveStartButtonAction
-{
-    [self _saveSnapshot];
 }
 
 - (void)_recordButtonAction
