@@ -9,75 +9,7 @@
 #import "ViewController.h"
 #import "BBLMarkerView.h"
 #import "BBLArrowView.h"
-
-@interface BBLMarkerData : NSObject
-
-@property (nonatomic, strong) BBLMarkerView *view;
-@property (nonatomic, assign) CGPoint markerPosition;
-@property (nonatomic, assign) CGPoint markerPositionDelta;
-@property (nonatomic, assign) CGSize markerSize;
-@property (nonatomic, copy) UIColor *color;
-@property (nonatomic) int team;
-
-@end
-
-@implementation BBLMarkerData
-
-- (instancetype)init {
-    if(self=[super init]) {
-        _view = [[BBLMarkerView alloc] initWithFrame:CGRectZero];
-    }
-    return self;
-}
-
-- (void)setColor:(UIColor *)color {
-    _view.backgroundColor = color;
-}
-
-- (UIColor *)color {
-    return _view.backgroundColor;
-}
-
-@end
-
-
-@interface BBLSnapshot : NSObject
-
-@property (nonatomic, copy) NSArray *snapPositions;
-@property (nonatomic, copy) NSArray *snapPath;
-
-@end
-
-@implementation BBLSnapshot
-
-- (instancetype)init {
-    if(self=[super init]) {
-        _snapPositions = [[NSArray alloc] init];
-        _snapPath = [[NSArray alloc] init];
-    }
-    return self;
-}
-@end
-
-@interface BBLplay : NSObject
-
-@property (nonatomic, copy) NSArray *playSteps;
-@property (nonatomic) int stepCount;
-
-@end
-
-@implementation BBLplay
-
-- (instancetype)init {
-    if(self=[super init]) {
-        _playSteps = @[];
-        _stepCount = -1;
-    }
-    return self;
-}
-
-
-@end
+#import "BBLDataModel.h"
 
 
 @interface ViewController ()
@@ -103,7 +35,7 @@
     
     // Recording
     BBLSnapshot *_snapshot;
-    BBLplay *_play;
+    BBLPlay *_play;
 }
 
 - (void)viewDidLoad {
@@ -159,7 +91,7 @@
     
     _showDefense = YES;
     _recording = NO;
-    _play = [BBLplay new];
+    _play = [BBLPlay new];
     
     
     // Setup Player and Ball markers
@@ -205,8 +137,10 @@
     for (BBLMarkerData *marker in _markers) {
         if (!_showDefense && marker.team == 2) {
             marker.view.hidden = YES;
+            // TODO Make view unselectable
         } else {
             marker.view.hidden = NO;
+            // TODO Make view selectable
         }
         marker.view.center = CGPointMake(marker.markerPosition.x + marker.markerPositionDelta.x,
                                          marker.markerPosition.y + marker.markerPositionDelta.y);
