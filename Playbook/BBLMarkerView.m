@@ -9,8 +9,7 @@
 #import "BBLMarkerView.h"
 
 @implementation BBLMarkerView
-- (instancetype)initWithFrame:(CGRect)frame
-{
+- (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
     }
@@ -23,5 +22,16 @@
     // Drawing code
 }
 */
+
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+    CGRect hitBox = self.bounds;
+    CGFloat dx = hitBox.size.width * -.3;
+    CGFloat dy = hitBox.size.height * -.3;
+    hitBox = CGRectInset(hitBox, dx, dy);
+    if (CGRectContainsPoint(hitBox, point)) {
+        return self;
+    }
+    return nil;
+}
 
 @end

@@ -225,6 +225,16 @@
     _play.playSteps = currentPlaySteps;
 }
 
+// Helper method for reset marker positions
+- (void) _setMarkersWithSnapshot:(BBLSnapshot *)snap {
+    _arrowView.pathPoints = @[];
+    for (int i = 0; i < _markers.count; i++) {
+        NSValue *resetPosition = snap.snapPositions[i];
+        [_markers[i] setMarkerPosition:resetPosition.CGPointValue];
+    }
+    return;
+}
+
 // Gesture and button click methods
 - (void)_onPan:(UIPanGestureRecognizer *)panGR {
     NSUInteger index = [_markers indexOfObjectPassingTest:^BOOL(BBLMarkerData * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -269,11 +279,7 @@
     } else {
         start = _snapshot;
     }
-    for (int i = 0; i < _markers.count; i++) {
-        NSValue *resetPosition = start.snapPositions[i];
-        [_markers[i] setMarkerPosition:resetPosition.CGPointValue];
-    }
-    _arrowView.pathPoints = @[];
+    [self _setMarkersWithSnapshot:start];
     _play.stepCount = 1;
     [self.view setNeedsLayout];
 
@@ -283,6 +289,7 @@
 {
     if (!_recording) {
         _play.playSteps = @[];
+        _play.stepCount = 0;
         [self _addPlayStep];
         [_recordButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         _recordButton.backgroundColor = [UIColor redColor];
@@ -300,16 +307,13 @@
         [self _recordButtonAction];
     }
     if (_play.stepCount == 0) {
-        [self _resetButtonAction];
+        [self _setMarkersWithSnapshot:_play.playSteps[0]];
     } else if (_play.stepCount >= [_play.playSteps count]) {
         _play.stepCount = 0;
-        [self _resetButtonAction];
+        [self _setMarkersWithSnapshot:_play.playSteps[0]];
     } else {
         BBLSnapshot *step = _play.playSteps[_play.stepCount];
-        for (int i = 0; i < _markers.count; i++) {
-            NSValue *stepPosition = step.snapPositions[i];
-            [_markers[i] setMarkerPosition:stepPosition.CGPointValue];
-        }
+        [self _setMarkersWithSnapshot:step];
         _arrowView.pathPoints = step.snapPath;
     }
     _play.stepCount += 1;
