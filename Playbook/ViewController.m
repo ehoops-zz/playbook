@@ -17,6 +17,7 @@
 @property (nonatomic, assign) CGPoint markerPositionDelta;
 @property (nonatomic, assign) CGSize markerSize;
 @property (nonatomic, copy) UIColor *color;
+@property (nonatomic) int team;
 
 @end
 
@@ -70,10 +71,11 @@
 - (instancetype)init {
     if(self=[super init]) {
         _playSteps = @[];
-        _stepCount = 0;
+        _stepCount = -1;
     }
     return self;
 }
+
 
 @end
 
@@ -93,10 +95,14 @@
     UIButton *_resetButton;
     UIButton *_recordButton;
     UIButton *_stepButton;
+    UIButton *_defenseButton;
+    
+    // Button controls
+    BOOL _recording;
+    BOOL _showDefense;
     
     // Recording
     BBLSnapshot *_snapshot;
-    BOOL _recording;
     BBLplay *_play;
 }
 
@@ -142,7 +148,16 @@
     [_stepButton addTarget:self action:@selector(_stepButtonAction) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:_stepButton];
     
-    // TODO: why is _recording still nil?
+    // Show Defense Button
+    _defenseButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [_defenseButton setTitle:@"Defense" forState:UIControlStateNormal];
+    [_defenseButton.titleLabel setFont:[UIFont systemFontOfSize:48]];
+    [_defenseButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    _defenseButton.backgroundColor = [UIColor grayColor];
+    [_defenseButton addTarget:self action:@selector(_defenseButtonAction) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:_defenseButton];
+    
+    _showDefense = YES;
     _recording = NO;
     _play = [BBLplay new];
     
@@ -150,38 +165,26 @@
     // Setup Player and Ball markers
     // Two teams of 5 and 1 ball
     NSMutableArray *markers = [NSMutableArray new];
-    
-    for (int i=0; i < 5; i++) {
-        BBLMarkerData *marker = [self _createMarkerWithColor:[UIColor redColor] position:CGPointMake(CGRectGetMidX(bounds) - i * 50 + 100, CGRectGetMidY(bounds) - 150) size:CGSizeMake(35, 35)];
-        [markers addObject:marker];
-    }
-    for (int i=0; i < 5; i++) {
-        BBLMarkerData *marker = [self _createMarkerWithColor:[UIColor blueColor] position:CGPointMake(CGRectGetMidX(bounds) - i * 50 + 100, CGRectGetMidY(bounds) - 75) size:CGSizeMake(35, 35)];
-        [markers addObject:marker];
-    }
-    
-    BBLMarkerData *marker = [self _createMarkerWithColor:[UIColor brownColor] position:CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds)) size:CGSizeMake(25, 25)];
+    // Create Ball Marker - markers[0]
+    BBLMarkerData *marker = [self _createMarkerWithColor:[UIColor brownColor] position:CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds)) size:CGSizeMake(25, 25) team:0];
     [markers addObject:marker];
-
+    // Create Offense Markers - markers[1-5]
+    for (int i=0; i < 5; i++) {
+        BBLMarkerData *marker = [self _createMarkerWithColor:[UIColor blueColor] position:CGPointMake(CGRectGetMidX(bounds) - i * 50 + 100, CGRectGetMidY(bounds) - 150) size:CGSizeMake(35, 35) team:1];
+        [markers addObject:marker];
+    }
+    // Create Defense Markers - markers[6-10]
+    for (int i=0; i < 5; i++) {
+        BBLMarkerData *marker = [self _createMarkerWithColor:[UIColor redColor] position:CGPointMake(CGRectGetMidX(bounds) - i * 50 + 100, CGRectGetMidY(bounds) - 75) size:CGSizeMake(35, 35) team:2];
+        [markers addObject:marker];
+    }
     _markers = [markers copy];
     
     [self _saveSnapshot];
 }
 
-// Helper method to create a player or ball marker
-- (BBLMarkerData *)_createMarkerWithColor:(UIColor *)color position:(CGPoint)position size:(CGSize)size {
-    BBLMarkerData *marker = [[BBLMarkerData alloc] init];
-    [self.view addSubview:marker.view];
-    marker.color = color;
-    marker.markerPosition = position;
-    marker.markerSize = size;
-    
-    UIPanGestureRecognizer *panGR = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(_onPan:)];
-    [marker.view addGestureRecognizer:panGR];
-    return marker;
-}
-
 - (void)viewWillLayoutSubviews {
+    // Layout court
     CGSize backgroundSize = self.view.bounds.size;
     CGSize courtSize = backgroundSize;
     courtSize.height -= 15;
@@ -190,19 +193,39 @@
     _courtView.frame = CGRectMake(backgroundSize.width - courtSize.width,
                                   backgroundSize.height - courtSize.height,
                                   courtSize.width, courtSize.height);
-    
-    _resetButton.frame = CGRectMake(10, 170, backgroundSize.width - courtSize.width - 20, 100);
-    _recordButton.frame = CGRectMake(10, 290, backgroundSize.width - courtSize.width - 20, 100);
-    _stepButton.frame = CGRectMake(10, 410, backgroundSize.width - courtSize.width - 20, 100);
-
-
-    
     _arrowView.frame = self.view.bounds;
+    
+    // Layout buttons
+    _resetButton.frame = CGRectMake(10, 160, backgroundSize.width - courtSize.width - 20, 100);
+    _recordButton.frame = CGRectMake(10, 280, backgroundSize.width - courtSize.width - 20, 100);
+    _stepButton.frame = CGRectMake(10, 400, backgroundSize.width - courtSize.width - 20, 100);
+    _defenseButton.frame = CGRectMake(10, 520, backgroundSize.width - courtSize.width - 20, 100);
+
+    // Update marker positions and lay them out
     for (BBLMarkerData *marker in _markers) {
+        if (!_showDefense && marker.team == 2) {
+            marker.view.hidden = YES;
+        } else {
+            marker.view.hidden = NO;
+        }
         marker.view.center = CGPointMake(marker.markerPosition.x + marker.markerPositionDelta.x,
                                          marker.markerPosition.y + marker.markerPositionDelta.y);
         marker.view.bounds = CGRectMake(0, 0, marker.markerSize.width, marker.markerSize.height);
     }
+}
+
+// Helper method to create a player or ball marker
+- (BBLMarkerData *)_createMarkerWithColor:(UIColor *)color position:(CGPoint)position size:(CGSize)size team:(int)team {
+    BBLMarkerData *marker = [[BBLMarkerData alloc] init];
+    [self.view addSubview:marker.view];
+    marker.color = color;
+    marker.markerPosition = position;
+    marker.markerSize = size;
+    marker.team = team;
+    
+    UIPanGestureRecognizer *panGR = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(_onPan:)];
+    [marker.view addGestureRecognizer:panGR];
+    return marker;
 }
 
 // Helper method to save the marker position and current arrow (pathPoints)
@@ -306,7 +329,9 @@
     if (_recording) {
         [self _recordButtonAction];
     }
-    if (_play.stepCount == 0) {
+    if (_play.stepCount == -1) {
+        return;
+    } else if (_play.stepCount == 0) {
         [self _setMarkersWithSnapshot:_play.playSteps[0]];
     } else if (_play.stepCount >= [_play.playSteps count]) {
         _play.stepCount = 0;
@@ -317,6 +342,24 @@
         _arrowView.pathPoints = step.snapPath;
     }
     _play.stepCount += 1;
+    [self.view setNeedsLayout];
+}
+
+- (void)_defenseButtonAction
+{
+    if (!_showDefense) {
+        [_defenseButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        _defenseButton.backgroundColor = [UIColor blueColor];
+        _showDefense = YES;
+    } else {
+        [_defenseButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        _defenseButton.backgroundColor = [UIColor grayColor];
+        _showDefense = NO;
+    }
+    // Clicking the show defense button clears the most recent arrow
+    // Non-optimal solution, but avoids showing an orphan arrow if the
+    // defense moves last before hiding
+    _arrowView.pathPoints = @[];
     [self.view setNeedsLayout];
 }
 
