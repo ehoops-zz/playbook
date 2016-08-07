@@ -7,8 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
-
 @class BBLMarkerView;
+
+#pragma mark markerData
 
 @interface BBLMarkerData : NSObject
 
@@ -17,14 +18,12 @@
 @property (nonatomic, assign) CGPoint markerPositionDelta;
 @property (nonatomic, assign) CGSize markerSize;
 @property (nonatomic, copy) UIColor *color;
-@property (nonatomic) int team;
+@property (nonatomic, assign) int team;
 
 @end
 
 
-
-
-@interface BBLSnapshot : NSObject
+@interface BBLSnapshot : NSObject <NSCoding>
 
 @property (nonatomic, copy) NSArray *snapPositions;
 @property (nonatomic, copy) NSArray *snapPath;
@@ -33,9 +32,8 @@
 
 
 
-@interface BBLPlay : NSObject
+@interface BBLPlay : NSObject <NSCoding>
 
-@property (nonatomic, copy) NSArray *playSteps;
-@property (nonatomic) int stepCount;
+@property (nonatomic, copy) NSArray<BBLSnapshot *> *playSteps;
 
 @end

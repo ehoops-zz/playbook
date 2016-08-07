@@ -28,14 +28,17 @@
     UIButton *_recordButton;
     UIButton *_stepButton;
     UIButton *_defenseButton;
+    UIButton *_saveButton;
     
     // Button controls
     BOOL _recording;
     BOOL _showDefense;
     
-    // Recording
+    // Recording and play back
     BBLSnapshot *_snapshot;
     BBLPlay *_play;
+    int _stepCount;
+    
 }
 
 - (void)viewDidLoad {
@@ -89,9 +92,19 @@
     [_defenseButton addTarget:self action:@selector(_defenseButtonAction) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:_defenseButton];
     
+    // Save Button
+    _saveButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [_saveButton setTitle:@"Save" forState:UIControlStateNormal];
+    [_saveButton.titleLabel setFont:[UIFont systemFontOfSize:48]];
+    [_saveButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    _saveButton.backgroundColor = [UIColor grayColor];
+    [_saveButton addTarget:self action:@selector(_saveButtonAction) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:_saveButton];
+    
     _showDefense = YES;
     _recording = NO;
     _play = [BBLPlay new];
+    _stepCount = -1;
     
     
     // Setup Player and Ball markers
@@ -132,6 +145,7 @@
     _recordButton.frame = CGRectMake(10, 280, backgroundSize.width - courtSize.width - 20, 100);
     _stepButton.frame = CGRectMake(10, 400, backgroundSize.width - courtSize.width - 20, 100);
     _defenseButton.frame = CGRectMake(10, 520, backgroundSize.width - courtSize.width - 20, 100);
+    _saveButton.frame = CGRectMake(10, 640, backgroundSize.width - courtSize.width - 20, 100);
 
     // Update marker positions and lay them out
     for (BBLMarkerData *marker in _markers) {
@@ -237,7 +251,7 @@
         start = _snapshot;
     }
     [self _setMarkersWithSnapshot:start];
-    _play.stepCount = 1;
+    _stepCount = 1;
     [self.view setNeedsLayout];
 
 }
@@ -246,7 +260,7 @@
 {
     if (!_recording) {
         _play.playSteps = @[];
-        _play.stepCount = 0;
+        _stepCount = 0;
         [self _addPlayStep];
         [_recordButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         _recordButton.backgroundColor = [UIColor redColor];
@@ -261,21 +275,23 @@
 - (void)_stepButtonAction
 {
     if (_recording) {
+        // TODO - move the record functionality to helper and call here
         [self _recordButtonAction];
     }
-    if (_play.stepCount == -1) {
+    if (_stepCount == -1) {
         return;
-    } else if (_play.stepCount == 0) {
+    }
+    if (_stepCount == 0) {
         [self _setMarkersWithSnapshot:_play.playSteps[0]];
-    } else if (_play.stepCount >= [_play.playSteps count]) {
-        _play.stepCount = 0;
+    } else if (_stepCount >= [_play.playSteps count]) {
+        _stepCount = 0;
         [self _setMarkersWithSnapshot:_play.playSteps[0]];
     } else {
-        BBLSnapshot *step = _play.playSteps[_play.stepCount];
+        BBLSnapshot *step = _play.playSteps[_stepCount];
         [self _setMarkersWithSnapshot:step];
         _arrowView.pathPoints = step.snapPath;
     }
-    _play.stepCount += 1;
+    _stepCount += 1;
     [self.view setNeedsLayout];
 }
 
@@ -295,6 +311,12 @@
     // defense moves last before hiding
     _arrowView.pathPoints = @[];
     [self.view setNeedsLayout];
+}
+
+- (void)_saveButtonAction
+{
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:_play];
+    NSLog(@"data size: %d", data.length);
 }
 
 @end

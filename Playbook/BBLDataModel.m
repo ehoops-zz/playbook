@@ -11,6 +11,20 @@
     }
     return self;
 }
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self=[super init]) {
+        _snapPositions = [aDecoder decodeObjectForKey:@"positions"];
+        _snapPath = [aDecoder decodeObjectForKey:@"path"];
+    }
+    return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+    [aCoder encodeObject:_snapPositions forKey:@"positions"];
+    [aCoder encodeObject:_snapPath forKey:@"path"];
+}
+
 @end
 
 @implementation BBLMarkerData
@@ -37,9 +51,36 @@
 - (instancetype)init {
     if (self=[super init]) {
         _playSteps = @[];
-        _stepCount = -1;
     }
     return self;
 }
 
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self=[super init]) {
+        _playSteps = [aDecoder decodeObjectForKey:@"play"];
+    }
+    return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+    [aCoder encodeObject:_playSteps forKey:@"play"];
+}
+
 @end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
