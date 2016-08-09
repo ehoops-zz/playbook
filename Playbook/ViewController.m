@@ -29,6 +29,7 @@
     UIButton *_stepButton;
     UIButton *_defenseButton;
     UIButton *_saveButton;
+    UIButton *_loadButton;
     
     // Button controls
     BOOL _recording;
@@ -38,6 +39,9 @@
     BBLSnapshot *_snapshot;
     BBLPlay *_play;
     int _stepCount;
+    
+    // Saving and loading plays
+    NSData *_savedPlay;
     
 }
 
@@ -101,6 +105,15 @@
     [_saveButton addTarget:self action:@selector(_saveButtonAction) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:_saveButton];
     
+    // Load Button
+    _loadButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [_loadButton setTitle:@"Load" forState:UIControlStateNormal];
+    [_loadButton.titleLabel setFont:[UIFont systemFontOfSize:48]];
+    [_loadButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    _loadButton.backgroundColor = [UIColor grayColor];
+    [_loadButton addTarget:self action:@selector(_loadButtonAction) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:_loadButton];
+    
     _showDefense = YES;
     _recording = NO;
     _play = [BBLPlay new];
@@ -110,21 +123,23 @@
     // Setup Player and Ball markers
     // Two teams of 5 and 1 ball
     NSMutableArray *markers = [NSMutableArray new];
-    // Create Ball Marker - markers[0]
-    BBLMarkerData *marker = [self _createMarkerWithColor:[UIColor brownColor] position:CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds)) size:CGSizeMake(25, 25) team:0];
-    [markers addObject:marker];
-    // Create Offense Markers - markers[1-5]
+
+    // Create Offense Markers - markers[0-4]
     for (int i=0; i < 5; i++) {
         BBLMarkerData *marker = [self _createMarkerWithColor:[UIColor blueColor] position:CGPointMake(CGRectGetMidX(bounds) - i * 50 + 100, CGRectGetMidY(bounds) - 150) size:CGSizeMake(35, 35) team:1];
         [markers addObject:marker];
     }
-    // Create Defense Markers - markers[6-10]
+    // Create Defense Markers - markers[5-9]
     for (int i=0; i < 5; i++) {
         BBLMarkerData *marker = [self _createMarkerWithColor:[UIColor redColor] position:CGPointMake(CGRectGetMidX(bounds) - i * 50 + 100, CGRectGetMidY(bounds) - 75) size:CGSizeMake(35, 35) team:2];
         [markers addObject:marker];
     }
-    _markers = [markers copy];
     
+    // Create Ball Marker - markers[10]
+    BBLMarkerData *marker = [self _createMarkerWithColor:[UIColor brownColor] position:CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds)) size:CGSizeMake(25, 25) team:0];
+    [markers addObject:marker];
+    
+    _markers = [markers copy];
     [self _saveSnapshot];
 }
 
@@ -146,6 +161,7 @@
     _stepButton.frame = CGRectMake(10, 400, backgroundSize.width - courtSize.width - 20, 100);
     _defenseButton.frame = CGRectMake(10, 520, backgroundSize.width - courtSize.width - 20, 100);
     _saveButton.frame = CGRectMake(10, 640, backgroundSize.width - courtSize.width - 20, 100);
+    _loadButton.frame = CGRectMake(10, 760, backgroundSize.width - courtSize.width - 20, 100);
 
     // Update marker positions and lay them out
     for (BBLMarkerData *marker in _markers) {
@@ -206,6 +222,15 @@
     return;
 }
 
+// Helper method to toggle recording
+- (void) _stopRecording
+{
+    NSAssert(_recording, @"Tried to stop recording when recording was off.");
+    [_recordButton setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+    _recordButton.backgroundColor = [UIColor grayColor];
+    _recording = NO;
+}
+
 // Gesture and button click methods
 - (void)_onPan:(UIPanGestureRecognizer *)panGR {
     NSUInteger index = [_markers indexOfObjectPassingTest:^BOOL(BBLMarkerData * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -242,7 +267,7 @@
 - (void)_resetButtonAction
 {
     if (_recording) {
-        [self _recordButtonAction];
+        [self _stopRecording];
     }
     BBLSnapshot *start = [BBLSnapshot new];
     if ([_play.playSteps count] > 0) {
@@ -266,17 +291,14 @@
         _recordButton.backgroundColor = [UIColor redColor];
         _recording = YES;
     } else {
-        [_recordButton setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
-        _recordButton.backgroundColor = [UIColor grayColor];
-        _recording = NO;
+        [self _stopRecording];
     }
 }
 
 - (void)_stepButtonAction
 {
     if (_recording) {
-        // TODO - move the record functionality to helper and call here
-        [self _recordButtonAction];
+        [self _stopRecording];
     }
     if (_stepCount == -1) {
         return;
@@ -317,6 +339,18 @@
 {
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:_play];
     NSLog(@"data size: %d", data.length);
+    _savedPlay = data;
 }
 
+- (void)_loadButtonAction
+{
+    if (_savedPlay == nil) {
+        return;
+    }
+    _play = [NSKeyedUnarchiver unarchiveObjectWithData:_savedPlay];
+    
+    [self _setMarkersWithSnapshot:_play.playSteps[0]];
+    _stepCount = 1;
+    [self.view setNeedsLayout];
+}
 @end
