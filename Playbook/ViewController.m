@@ -338,7 +338,6 @@
 - (void)_saveButtonAction
 {
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:_play];
-    NSLog(@"data size: %d", data.length);
     _savedPlay = data;
 }
 
@@ -346,6 +345,9 @@
 {
     if (_savedPlay == nil) {
         return;
+    }
+    if (_recording) {
+        [self _stopRecording];
     }
     _play = [NSKeyedUnarchiver unarchiveObjectWithData:_savedPlay];
     
